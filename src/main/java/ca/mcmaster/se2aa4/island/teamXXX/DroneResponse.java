@@ -2,9 +2,9 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import org.json.JSONObject;
 
-public class Response {
+public class DroneResponse {
 
-    private static Response instance = null;
+    private static DroneResponse instance = null;
 
     private JSONObject response;
 
@@ -16,10 +16,10 @@ public class Response {
         return response;
     }
 
-    public static Response getInstance() {
+    public static DroneResponse getInstance() {
 
         if (instance == null) {
-            instance = new Response();
+            instance = new DroneResponse();
         }
         return instance;
     }

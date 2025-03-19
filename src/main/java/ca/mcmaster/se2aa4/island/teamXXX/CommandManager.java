@@ -28,26 +28,26 @@ public class CommandManager implements IExplorerRaid {
     @Override
     public String takeDecision() {
 
-        Decisione decision = Decisione.getInstance();
+        DroneDecision decision = DroneDecision.getInstance();
 
         JSONObject jsonDecision = decision.getDecision();
         String stringDecision = jsonDecision.toString();
 
-        logger.info("** Decisione: {}", stringDecision);
+        logger.info("** DroneDecision: {}", stringDecision);
         return stringDecision;
     }
 
     @Override
     public void acknowledgeResults(String s) {
 
-        Response response = Response.getInstance();
+        DroneResponse response = DroneResponse.getInstance();
 
         JSONObject jsonResponse = new JSONObject(new JSONTokener(new StringReader(s)));
 
         response.setResponse(jsonResponse);
 
         // The errors below are inherint to source code
-        logger.info("** Response received:\n" + jsonResponse.toString(2));
+        logger.info("** DroneResponse received:\n" + jsonResponse.toString(2));
         Integer cost = jsonResponse.getInt("cost");
         logger.info("The cost of the action was {}", cost);
         String status = jsonResponse.getString("status");

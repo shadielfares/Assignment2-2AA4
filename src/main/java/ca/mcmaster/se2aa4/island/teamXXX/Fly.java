@@ -7,9 +7,9 @@ public class Fly implements DroneAction {
 
     public JSONObject doAction(Heading heading) {
 
-        JSONObject Decisione = new JSONObject();
-        Decisione.put("action", "fly");
-        return Decisione;
+        JSONObject DroneDecision = new JSONObject();
+        DroneDecision.put("action", "fly");
+        return DroneDecision;
 
     }
 

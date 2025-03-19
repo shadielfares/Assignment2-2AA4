@@ -8,12 +8,12 @@ public class Algorithm {
 
         Heading heading = Heading.SOUTH;
 
-        Decisione decision = Decisione.getInstance();
+        DroneDecision decision = DroneDecision.getInstance();
         JSONObject jsonDecision = decision.getDecision();
 
         String action = jsonDecision.getString("action");
 
-        Response response = Response.getInstance();
+        DroneResponse response = DroneResponse.getInstance();
         JSONObject jsonResponse = response.getResponse();
 
         JSONObject extras = jsonResponse.getJSONObject("extras");

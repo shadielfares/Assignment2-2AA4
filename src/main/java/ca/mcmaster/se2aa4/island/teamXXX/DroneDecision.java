@@ -2,13 +2,13 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import org.json.JSONObject;
 
-public class Decisione {
+public class DroneDecision {
 
-    private static Decisione instance = null;
+    private static DroneDecision instance = null;
 
     private JSONObject decision;
 
-    private Decisione() {
+    private DroneDecision() {
 
         Heading heading = Heading.SOUTH;
         setDecision(new Fly().doAction(heading));
@@ -22,10 +22,10 @@ public class Decisione {
         return decision;
     }
 
-    public static Decisione getInstance() {
+    public static DroneDecision getInstance() {
 
         if (instance == null) {
-            instance = new Decisione();
+            instance = new DroneDecision();
         }
         return instance;
     }
