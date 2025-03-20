@@ -39,7 +39,7 @@ public class CommandManager implements IExplorerRaid {
 
     @Override
     public void acknowledgeResults(String s) {
-
+        DroneDecision decision = DroneDecision.getInstance();
         DroneResponse response = DroneResponse.getInstance();
 
         JSONObject jsonResponse = new JSONObject(new JSONTokener(new StringReader(s)));
@@ -55,8 +55,9 @@ public class CommandManager implements IExplorerRaid {
         JSONObject extraInfo = jsonResponse.getJSONObject("extras");
         logger.info("Additional information received: {}", extraInfo);
 
-        algorithm.nextDecision();
-
+        if (decision.isEmpty()) {
+            algorithm.nextRoutine();
+        }
     }
 
     @Override

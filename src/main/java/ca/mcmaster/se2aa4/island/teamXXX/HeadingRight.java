@@ -7,7 +7,7 @@ public class HeadingRight implements DroneAction {
     public JSONObject doAction(Heading heading) {
         JSONObject decision = new JSONObject();
         JSONObject parameters = new JSONObject();
-        decision.put("action", "echo");
+        decision.put("action", "heading");
 
         Drone drone = Drone.getDroneInstance();
 

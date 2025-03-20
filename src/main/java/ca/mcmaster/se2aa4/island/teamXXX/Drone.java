@@ -5,7 +5,7 @@ public class Drone {
     private static Drone instance = null;
 
     private Drone() {
-
+        this.heading = Heading.EAST;
     }
 
     public static Drone getDroneInstance() {
@@ -19,7 +19,7 @@ public class Drone {
         this.heading = heading;
     }
 
-    public Heading getHeading(Heading heading) {
+    public Heading getHeading() {
         return heading;
     }
 }
