@@ -1,12 +1,14 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
 import java.io.StringReader;
+import java.net.CookieStore;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import eu.ace_design.island.bot.IExplorerRaid;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import eu.ace_design.island.bot.IExplorerRaid;
 
 public class CommandManager implements IExplorerRaid {
 
@@ -14,12 +16,28 @@ public class CommandManager implements IExplorerRaid {
 
     private final Logger logger = LogManager.getLogger();
 
+    private Drone drone = Drone.getDroneInstance();
+
     @Override
     public void initialize(String s) {
         logger.info("** Initializing the Exploration Command Center");
         JSONObject info = new JSONObject(new JSONTokener(new StringReader(s)));
         logger.info("** Initialization info:\n {}", info.toString(2));
         String direction = info.getString("heading");
+        
+        if (direction.equals("N")) {
+            drone.setHeading(Heading.NORTH);
+        }
+        else if (direction.equals("E")) {
+            drone.setHeading(Heading.EAST);
+        }
+        else if (direction.equals("S")) {
+            drone.setHeading(Heading.SOUTH);
+        }
+        else {
+            drone.setHeading(Heading.WEST);
+        }
+
         Integer batteryLevel = info.getInt("budget");
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
@@ -54,6 +72,9 @@ public class CommandManager implements IExplorerRaid {
         logger.info("The status of the drone is {}", status);
         JSONObject extraInfo = jsonResponse.getJSONObject("extras");
         logger.info("Additional information received: {}", extraInfo);
+
+        drone.decreaseBattery(cost);
+        drone.displayBattery();
 
         if (decision.isEmpty()) {
             algorithm.nextRoutine();
