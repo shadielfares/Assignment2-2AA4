@@ -7,6 +7,7 @@ import java.util.Queue;
 import org.json.JSONObject;
 import java.util.LinkedList;
 
+// Stores list of drone actions to be completed
 public class Routine {
 
     private final String name;
@@ -34,6 +35,7 @@ public class Routine {
         return this.name;
     }
 
+    // Creates a copy of the current routine
     @Override
     public Routine clone() {
 

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import ca.mcmaster.se2aa4.island.teamXXX.drone.DroneAction;
 
+// Stores the current list of active routines each algorithm has access to
 public class ActiveRoutines {
 
     private static ActiveRoutines instance = null;
@@ -24,7 +25,8 @@ public class ActiveRoutines {
 
     public Routine selectRoutine(String routineName) {
 
-        Routine fakeRoutine = new Routine("ERROR", new LinkedList<DroneAction>());
+        // Invalid routine selected
+        Routine errorRoutine = new Routine("ERROR", new LinkedList<DroneAction>());
 
         for (Routine routine : activeRoutines) {
             if (routine.getRoutineName().equals(routineName)) {
@@ -32,8 +34,7 @@ public class ActiveRoutines {
             }
         }
 
-        // Include the return of an error
-        return fakeRoutine;
+        return errorRoutine;
     }
 
     public void clearRoutine() {

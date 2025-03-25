@@ -14,10 +14,11 @@ import ca.mcmaster.se2aa4.island.teamXXX.enumerations.State;
 import ca.mcmaster.se2aa4.island.teamXXX.tools.RaycastMap;
 import ca.mcmaster.se2aa4.island.teamXXX.tools.ActiveRoutines;
 
+
+// Manages switching between the three primary algorithms: finding North-West corner
+// creating raycast outline of map, and sweeping the terrain
 public class AlgorithmManager {
 
-
-    private Drone drone = Drone.getDroneInstance();
     private DroneDecision droneDecision = DroneDecision.getInstance();
     private DroneResponse response = DroneResponse.getInstance();
     private RaycastMap raycastMap = new RaycastMap();
@@ -26,13 +27,15 @@ public class AlgorithmManager {
 
     private final Logger logger = LogManager.getLogger();
 
-    private FindCornerAlgorithm findCornerAlgorithm = new FindCornerAlgorithm(droneDecision, drone);
-    private RaycastAlgorithm raycastAlgorithm = new RaycastAlgorithm(droneDecision, drone, raycastMap);
-    private SweepAlgorithm sweepAlgorithm = new SweepAlgorithm(droneDecision, drone, raycastMap);
+    // Create associations to each of the three algorithms
+    private FindCornerAlgorithm findCornerAlgorithm = new FindCornerAlgorithm(droneDecision);
+    private RaycastAlgorithm raycastAlgorithm = new RaycastAlgorithm(droneDecision, raycastMap);
+    private SweepAlgorithm sweepAlgorithm = new SweepAlgorithm(droneDecision, raycastMap);
 
     private State state = State.FIND_CORNER;
     private boolean switchState = true;
 
+    // Automatically called once a routine ends
     public void nextRoutine() {
 
         JSONObject jsonResponse = response.getResponse();
@@ -41,16 +44,22 @@ public class AlgorithmManager {
         String status = jsonResponse.getString("status");
 
 
+        // Determines the current state, and runs the appropriate algorithm
         if (state.equals(State.FIND_CORNER)) {
 
             if (switchState) {
+
+                // Initializes find corner algorithm
                 findCornerAlgorithm.findCornerConstructor();
                 switchState = false;
-            }
+            }  
 
+            // Runs find corner algorithm and its associated routines
             boolean switchState = findCornerAlgorithm.findCornerBehavior(extras, cost, status);
 
             if (switchState) {
+
+                // Initializes raycast algorithm
                 state = State.RAYCAST;
                 raycastAlgorithm.raycastConstructor();
                 droneDecision.setRoutine(activeRoutines.selectRoutine("D"));
@@ -58,9 +67,12 @@ public class AlgorithmManager {
         }
         else if (state.equals(State.RAYCAST)) {
 
+            // Runs raycasting algorithm and its associated routines
             boolean switchState = raycastAlgorithm.raycastBehaviour(extras, cost, status);
 
             if (switchState) {
+
+                // Initializes sweeping algorithm
                 state = State.SWEEP;
                 sweepAlgorithm.sweepConstructor();
                 droneDecision.setRoutine(activeRoutines.selectRoutine("A"));
@@ -69,6 +81,7 @@ public class AlgorithmManager {
         }
         else if (state.equals(State.SWEEP)) {
             
+            // Runs sweeping algorithm and its associated routines
             boolean switchState = sweepAlgorithm.sweepBehaviour(extras, cost, status);
         }
         

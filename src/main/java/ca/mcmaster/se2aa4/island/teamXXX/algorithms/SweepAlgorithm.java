@@ -23,28 +23,30 @@ import java.util.List;
 import java.util.LinkedList;
 import org.json.JSONObject;
 
+// Defines the algorithm for sweeping the island
 public class SweepAlgorithm {
 
     private DroneDecision droneDecision;
     private RaycastMap raycastMap;
-    private Drone drone;
+    private Drone drone = Drone.getDroneInstance();
 
     private ActiveRoutines activeRoutines = ActiveRoutines.getInstance();
 
-    public SweepAlgorithm(DroneDecision droneDecision, Drone drone, RaycastMap raycastMap) {
+    public SweepAlgorithm(DroneDecision droneDecision, RaycastMap raycastMap) {
 
         this.droneDecision = droneDecision;
         this.raycastMap = raycastMap;
-        this.drone = drone;
     }
     
+    // Handles switching routines to sweep the island
     public boolean sweepBehaviour(JSONObject extras, int cost, String status) {
 
         boolean switchState = false;
 
+        // Fly forward until top of island is reached
         if (droneDecision.getRoutineName().equals("A")) {
-            
-            if (raycastMap.getEntryRow() - 1 > drone.getY()) {
+             
+            if (raycastMap.getEntryRow() - 1 > drone.getY()) { // Check that top of island is reached
                 droneDecision.setRoutine(activeRoutines.selectRoutine("A"));
             }
             else {
@@ -52,22 +54,26 @@ public class SweepAlgorithm {
             }
 
         }
+        // Turn left to begin sweeping
         else if (droneDecision.getRoutineName().equals("B")) {
             droneDecision.setRoutine(activeRoutines.selectRoutine("C"));
         }
+        // Travel East until island reached
         else if (droneDecision.getRoutineName().equals("C")) {
             
-            if (drone.getX() < raycastMap.getMin(drone.getY())) {
+            if (drone.getX() < raycastMap.getMin(drone.getY())) { // Check when island is reached 
                 droneDecision.setRoutine(activeRoutines.selectRoutine("C"));
             }
             else {
                 droneDecision.setRoutine(activeRoutines.selectRoutine("D"));
             }
         }
+
+        // Sweep rightward until end of island reached
         else if (droneDecision.getRoutineName().equals("D")) {
 
 
-            if (drone.getY() <= raycastMap.getExitRow() - 1) {
+            if (drone.getY() <= raycastMap.getExitRow() - 1) { // Check when right-most part of island is reached
                 if (drone.getX() < Math.max(raycastMap.getMax(drone.getY() + 2) + 1, raycastMap.getMax(drone.getY()) + 1)) {
                     droneDecision.setRoutine(activeRoutines.selectRoutine("D"));
                 }
@@ -82,14 +88,16 @@ public class SweepAlgorithm {
             }
 
         }
+        // Turn right twice and sweep leftward until beginning of island reached
         else if (droneDecision.getRoutineName().equals("E")) {
 
             droneDecision.setRoutine(activeRoutines.selectRoutine("F"));
 
         }
+        // Sweep leftward until beginning of island is reached
         else if (droneDecision.getRoutineName().equals("F")) {
 
-            if (drone.getY() <= raycastMap.getExitRow() - 1) {
+            if (drone.getY() <= raycastMap.getExitRow() - 1) { // Check when left-most part of island is reached
                 if (drone.getX() > Math.min(raycastMap.getMin(drone.getY() + 2) - 1, raycastMap.getMin(drone.getY()) - 1)) {
                     droneDecision.setRoutine(activeRoutines.selectRoutine("F"));
                 }
@@ -98,29 +106,30 @@ public class SweepAlgorithm {
                 }
             }
             else {
-
-                // Complete sweep
                 droneDecision.setRoutine(activeRoutines.selectRoutine("H"));
             }
 
         }
+        // Turn left twice and resume sweeping rightward
         else if (droneDecision.getRoutineName().equals("G")) {
 
             droneDecision.setRoutine(activeRoutines.selectRoutine("D"));
         }
+        // Once first scan of island is completed, begin second scan rightward
         else if (droneDecision.getRoutineName().equals("H")) {
 
             droneDecision.setRoutine(activeRoutines.selectRoutine("J"));
 
-        }
+        } // Once first scan of island is completed, begin second scan leftward
         else if (droneDecision.getRoutineName().equals("I")) {
 
             droneDecision.setRoutine(activeRoutines.selectRoutine("K"));
 
         }
+        // Sweep rightward until end of island reached
         else if (droneDecision.getRoutineName().equals("J")) {
 
-            if (drone.getY() > raycastMap.getEntryRow()) {
+            if (drone.getY() > raycastMap.getEntryRow()) { // Check when right-most part of island is reached
                 if (drone.getX() < Math.max(raycastMap.getMax(drone.getY() + 2) + 1, raycastMap.getMax(drone.getY()) + 1)) {
                     droneDecision.setRoutine(activeRoutines.selectRoutine("J"));
                 }
@@ -135,9 +144,10 @@ public class SweepAlgorithm {
             }
 
         }
+        // Sweep leftward until beginning of island reached
         else if (droneDecision.getRoutineName().equals("K")) {
 
-            if (drone.getY() > raycastMap.getEntryRow()) {
+            if (drone.getY() > raycastMap.getEntryRow()) { // Check when left-most part of island is reached
                 if (drone.getX() > Math.min(raycastMap.getMin(drone.getY() + 2) - 1, raycastMap.getMin(drone.getY()) - 1)) {
                     droneDecision.setRoutine(activeRoutines.selectRoutine("K"));
                 }
@@ -151,21 +161,20 @@ public class SweepAlgorithm {
                 droneDecision.setRoutine(activeRoutines.selectRoutine("N"));
             }
             
-        }
+        } // Turn left twice once beginning of island is reached
         else if (droneDecision.getRoutineName().equals("L")) {
 
             droneDecision.setRoutine(activeRoutines.selectRoutine("K"));
             
-        }
+        } // Turn right twice once end of island is reached
         else if (droneDecision.getRoutineName().equals("M")) {
 
             droneDecision.setRoutine(activeRoutines.selectRoutine("J"));
 
-        }
+        } // Finished sweeping, terminate algorithm
         else if (droneDecision.getRoutineName().equals("N")) {
 
             switchState = true;
-            raycastMap.displayMap();
     
         }
 
@@ -173,8 +182,10 @@ public class SweepAlgorithm {
     
     }
 
+    // Define routines for the sweeping algorithm
     public void sweepConstructor() {
 
+        // Defines sequences of drone actions that compose each routine
         Queue<DroneAction> sequenceA = new LinkedList<DroneAction>();
         sequenceA.add(new Fly());
 
@@ -227,14 +238,13 @@ public class SweepAlgorithm {
         sequenceL.add(new HeadingLeft());
 
         Queue<DroneAction> sequenceM = new LinkedList<DroneAction>();
-
         sequenceM.add(new HeadingRight());
         sequenceM.add(new HeadingRight());
 
         Queue<DroneAction> sequenceN = new LinkedList<DroneAction>();
-
         sequenceN.add(new Stop());
-        
+
+        // Creating each routine in the algorithm
         Routine routine1 = new Routine("A", sequenceA);
         Routine routine2 = new Routine("B", sequenceB);
         Routine routine3 = new Routine("C", sequenceC);
@@ -250,6 +260,7 @@ public class SweepAlgorithm {
         Routine routine13 = new Routine("M", sequenceM);
         Routine routine14 = new Routine("N", sequenceN);
 
+        // Adding each routine to the active list of routines
         activeRoutines.addRoutine(routine1);
         activeRoutines.addRoutine(routine2);
         activeRoutines.addRoutine(routine3);

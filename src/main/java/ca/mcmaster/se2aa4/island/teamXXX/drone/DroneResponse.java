@@ -2,6 +2,7 @@ package ca.mcmaster.se2aa4.island.teamXXX.drone;
 
 import org.json.JSONObject;
 
+// Stores the drone's response
 public class DroneResponse {
 
     private static DroneResponse instance = null;

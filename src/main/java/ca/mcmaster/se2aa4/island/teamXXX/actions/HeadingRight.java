@@ -6,10 +6,12 @@ import ca.mcmaster.se2aa4.island.teamXXX.drone.Drone;
 import ca.mcmaster.se2aa4.island.teamXXX.drone.DroneAction;
 import ca.mcmaster.se2aa4.island.teamXXX.enumerations.Heading;
 
+// Defines drone heading right action
 public class HeadingRight implements DroneAction {
 
     @Override
 
+    // Creates JSONObject for heading right action
     public JSONObject doAction(Heading heading) {
 
         JSONObject decision = new JSONObject();

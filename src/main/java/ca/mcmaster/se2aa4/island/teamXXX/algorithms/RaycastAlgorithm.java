@@ -23,40 +23,42 @@ import java.util.List;
 import java.util.LinkedList;
 import org.json.JSONObject;
 
+// Defines the algorithm for generating an outline of the island using raycasts
 public class RaycastAlgorithm {
 
     private DroneDecision droneDecision;
     private RaycastMap raycastMap;
-    private Drone drone;
+    private Drone drone = Drone.getDroneInstance();
 
     private ActiveRoutines activeRoutines = ActiveRoutines.getInstance();
 
-    public RaycastAlgorithm(DroneDecision droneDecision, Drone drone, RaycastMap raycastMap) {
+    public RaycastAlgorithm(DroneDecision droneDecision, RaycastMap raycastMap) {
 
         this.droneDecision = droneDecision;
         this.raycastMap = raycastMap;
-        this.drone = drone;
     }
 
+    // Handles switching routines to complete the map raycast
     public boolean raycastBehaviour(JSONObject extras, int cost, String status) {
 
         boolean switchState = false;
 
-        if (droneDecision.getRoutineName().equals("D")) {
+        // Determine how far to travel to cover map edge
+        if (droneDecision.getRoutineName().equals("D")) { 
 
             drone.incrementCornersTravelled();
-            droneDecision.setRoutine(activeRoutines.selectRoutine("B"));
+            droneDecision.setRoutine(activeRoutines.selectRoutine("B")); 
 
         }
+        // Rotate around corner of map
+        else if (droneDecision.getRoutineName().equals("A")) { 
 
-        else if (droneDecision.getRoutineName().equals("A")) {
-
-            if (!drone.allCornersTravelled()) {
+            if (!drone.allCornersTravelled()) { // Check if entire map has been circled
                 
                 drone.incrementCornersTravelled();
-                droneDecision.setRoutine(activeRoutines.selectRoutine("B"));
+                droneDecision.setRoutine(activeRoutines.selectRoutine("B")); 
             }
-            else {
+            else { // Terminate algorithm
 
                 activeRoutines.clearRoutine();
 
@@ -68,32 +70,30 @@ public class RaycastAlgorithm {
 
             }
         }
-        else if (droneDecision.getRoutineName().equals("B")) {
+        // Determine how far to travel to cover map edge
+        else if (droneDecision.getRoutineName().equals("B")) { 
 
             drone.setSafeTravelDistance(extras.getInt("range") - 3);
             droneDecision.setRoutine(activeRoutines.selectRoutine("C"));
         }
+        // Create raycasts that outline the island
         else if (droneDecision.getRoutineName().equals("C")) {
 
             int distance_remaining = drone.getSafeTravelDistance();
 
-            if (extras.getString("found").equals("GROUND")) {
-                raycastMap.setRaycast(drone.getHeading(), extras.getInt("range"), drone.getX(), drone.getY());
-                raycastMap.displayMap();
+            if (extras.getString("found").equals("GROUND")) { // Checks that drone is facing ground
+                raycastMap.setRaycast(drone.getHeading(), extras.getInt("range"), drone.getX(), drone.getY()); // Casts ray
             }
 
-            // More distance left to travel
-
-            if (distance_remaining > 0) {
+            if (distance_remaining > 0) { // Continue travelling until corner of map is reached
                 distance_remaining -= 1;
                 drone.setSafeTravelDistance(distance_remaining);
 
-                droneDecision.setRoutine(activeRoutines.selectRoutine("C"));
+                droneDecision.setRoutine(activeRoutines.selectRoutine("C")); 
             }
             else {
 
-                // Repeat cornering process
-                droneDecision.setRoutine(activeRoutines.selectRoutine("A"));
+                droneDecision.setRoutine(activeRoutines.selectRoutine("A")); 
             }
 
         }
@@ -101,9 +101,10 @@ public class RaycastAlgorithm {
         return switchState;
     
     }
-
+    // Define routines for the raycast algorithm
     public void raycastConstructor() {
 
+        // Defines sequences of drone actions that compose each routine
         Queue<DroneAction> sequenceA = new LinkedList<DroneAction>();
         sequenceA.add(new HeadingLeft());
 
@@ -117,11 +118,13 @@ public class RaycastAlgorithm {
         Queue<DroneAction> sequenceD = new LinkedList<DroneAction>();
         sequenceD.add(new Scan());
 
+        // Creating each routine in the algorithm
         Routine routine1 = new Routine("A", sequenceA);
         Routine routine2 = new Routine("B", sequenceB);
         Routine routine3 = new Routine("C", sequenceC);
         Routine routine4 = new Routine("D", sequenceD);
 
+        // Adding each routine to the active list of routines
         activeRoutines.addRoutine(routine1);
         activeRoutines.addRoutine(routine2);
         activeRoutines.addRoutine(routine3);

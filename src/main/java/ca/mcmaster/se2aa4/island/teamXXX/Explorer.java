@@ -25,12 +25,10 @@ import java.util.Queue;
 public class Explorer implements IExplorerRaid {
 
     private AlgorithmManager algorithmManager = new AlgorithmManager();
-
     private final Logger logger = LogManager.getLogger();
-
     private Drone drone = Drone.getDroneInstance();
-
     private String lastAction;
+
 
     @Override
     public void initialize(String s) {

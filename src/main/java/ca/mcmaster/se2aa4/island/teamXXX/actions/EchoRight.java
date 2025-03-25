@@ -10,7 +10,7 @@ public class EchoRight implements DroneAction {
 
     @Override
 
-    // Creates JSONObject with correct echo parameters (heading)
+    // Creates JSONObject with correct echo heading
     public JSONObject doAction(Heading heading) {
 
         JSONObject decision = new JSONObject();

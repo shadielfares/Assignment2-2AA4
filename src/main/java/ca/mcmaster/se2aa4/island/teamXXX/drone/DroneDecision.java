@@ -8,8 +8,9 @@ import java.util.LinkedList;
 
 import org.json.JSONObject;
 
+// Stores the drone's current decision and routine
 public class DroneDecision {
-    
+
     private static DroneDecision instance = null;
     private Routine routine;
 
@@ -18,7 +19,7 @@ public class DroneDecision {
     }
 
     private DroneDecision() {
-        // ISSUE TBD
+    
         Queue<DroneAction> startSequence = new LinkedList<DroneAction>();
         startSequence.add(new Scan());
 
@@ -34,6 +35,7 @@ public class DroneDecision {
         this.routine = routine;
     }
 
+    // Retrieves the next decision the drone makes according to its routine
     public JSONObject getDecision() {
         return routine.getRoutineDecision();
     }

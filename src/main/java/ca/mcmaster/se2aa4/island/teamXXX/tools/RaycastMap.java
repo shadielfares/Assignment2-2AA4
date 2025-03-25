@@ -12,13 +12,15 @@ public class RaycastMap {
 
     private char[][] grid = new char[SIZE][SIZE];
 
-    private int[][] rowEnds = new int[SIZE][2];
+    // Defines the first and last tile in each row that represents the island border
+    private int[][] terminalRowTiles = new int[SIZE][2];
 
     private int entryRow;
     private int exitRow;
 
     private final Logger logger = LogManager.getLogger();
 
+    // Initializes the raycast map
     public RaycastMap() {
 
         for (int i=0; i<SIZE; i++) {
@@ -28,18 +30,22 @@ public class RaycastMap {
         }
     }
     
+    // Find the row the island starts on
     public int getEntryRow() {
         return entryRow;
     }
 
+    // Find the row the island ends on
     public int getExitRow() {
         return exitRow;
     }
-    
-    public void setTile(int x, int y) {
+
+    // Update tile in raycast map
+    private void setTile(int x, int y) {
         grid[y-1][x-1] = 'X';
     }
 
+    // Generate map outline
     public void setRaycast(Heading heading, int distance, int x, int y) {
 
         distance += 1;
@@ -59,20 +65,7 @@ public class RaycastMap {
 
     }
 
-    public void displayMap() {
-
-        for (int i=0; i<SIZE; i++) {
-            String row = "";
-
-            for (int j=0; j<SIZE; j++) {
-                row += grid[i][j] + " ";
-            }
-
-            logger.info(row);
-        }
-
-    }
-
+    // Calculate the region the drone needs to scan over the island
     public void calculateScanRegion() {
         
         for (int i=0; i<SIZE; i++) {
@@ -83,50 +76,45 @@ public class RaycastMap {
             for (int j=0; j<SIZE;j++) {
                 
                 if (grid[i][j] == 'X') {
-
                     xMin = Math.min(j + 1, xMin);
                     xMax = Math.max(j + 1, xMax);
-
                 }
             }
 
-            rowEnds[i][0] = xMin;
-            rowEnds[i][1] = xMax;
+            terminalRowTiles[i][0] = xMin;
+            terminalRowTiles[i][1] = xMax;
 
         }
     }
 
+    // Calculate the row the island starts on
     public void calculateEntryRow() {
 
         for (int i =0; i<SIZE;i++) {
-
-            if (rowEnds[i][0] != SIZE + 1) {
-
+            if (terminalRowTiles[i][0] != SIZE + 1) {
                 entryRow = i + 1;
                 break;
             }
         }
     }
 
+    // Calculate the row the island ends on
     public void calculateExitRow() {
 
         for (int i =0; i<SIZE;i++) {
-
-            if (rowEnds[i][0] != SIZE + 1) {
-
+            if (terminalRowTiles[i][0] != SIZE + 1) {
                 exitRow = i + 1;
             }
         }
     }
 
+    // Get the last tile in a row
     public int getMax(int row) {
-        return rowEnds[row - 1][1];
+        return terminalRowTiles[row - 1][1];
     }
 
+    // Get the first tile in a row
     public int getMin(int row) {
-        return rowEnds[row - 1][0];
+        return terminalRowTiles[row - 1][0];
     }
-
-
-
 }

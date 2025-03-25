@@ -11,7 +11,7 @@ import ca.mcmaster.se2aa4.island.teamXXX.enumerations.Heading;
 import ca.mcmaster.se2aa4.island.teamXXX.poi.Creek;
 import ca.mcmaster.se2aa4.island.teamXXX.poi.Site;
 
-
+// Defines the flying drone
 public class Drone {
 
     private Heading heading;
@@ -41,14 +41,17 @@ public class Drone {
         return instance;
     }
 
+    // Tracks located creeks
     public void addCreek(Creek creek) {
         creekList.add(creek);
     }
-
+    
+    // Tracks located sites
     public void addSite(Site site) {
         siteList.add(site);
     }
 
+    // Calculates the creek nearest to the emergency site
     public String findNearestCreek() {
 
         if (siteList.size() > 0) {
@@ -77,6 +80,7 @@ public class Drone {
         }
     }
 
+    // Updates drone location when flying
     public void fly() {
 
         if (heading.equals(Heading.NORTH)) {
@@ -93,6 +97,7 @@ public class Drone {
         }
     }
 
+    // Updates drone location and heading when turning left
     public JSONObject headingLeft(JSONObject parameters) {
 
         if (heading.equals(Heading.EAST)) {
@@ -124,6 +129,7 @@ public class Drone {
 
     }
 
+    // Updates drone location and heading when turning right
     public JSONObject headingRight(JSONObject parameters) {
 
         if (heading.equals(Heading.EAST)) {
@@ -160,11 +166,13 @@ public class Drone {
 
     }
 
+    // Places drone on the raycast version of the map
     public void placeOnRaycastMap() {
         this.x = 2;
         this.y = 1;
     }
 
+    // Tracks number of corners the drone has travelled through
     public void incrementCornersTravelled() {
         this.cornersTravelled += 1;
     }
@@ -181,6 +189,7 @@ public class Drone {
         return y;
     }
 
+    // Initialize the drones starting heading
     public void initializeHeading(String direction) {
 
         if (direction.equals("N")) {
@@ -195,8 +204,9 @@ public class Drone {
         else {
             heading = Heading.WEST;
         }
-    }
+    }  
 
+    // Save how far the drone can travel before colliding with an obstacle
     public void setSafeTravelDistance(int distance) {
         this.safeTravelDistance = distance;
     }

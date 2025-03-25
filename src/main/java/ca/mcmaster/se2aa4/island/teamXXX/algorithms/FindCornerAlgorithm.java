@@ -23,196 +23,204 @@ import java.util.LinkedList;
 
 import org.json.JSONObject;
 
+// Defines the algorithm for locating the North-West corner
 public class FindCornerAlgorithm {
 
     private DroneDecision droneDecision;
-    private Drone drone;
+    private Drone drone = Drone.getDroneInstance();
 
     private ActiveRoutines activeRoutines = ActiveRoutines.getInstance();
 
-    public FindCornerAlgorithm(DroneDecision droneDecision, Drone drone) {
+    public FindCornerAlgorithm(DroneDecision droneDecision) {
 
         this.droneDecision = droneDecision;
-        this.drone = drone;
     }
 
+    // Handles switching routines to find the North-West corner
     public boolean findCornerBehavior(JSONObject extras, int cost, String status) {
 
         boolean switchState = false;
         
-        if (droneDecision.getRoutineName().equals("START")) { // Start State
+        // Start State
+        if (droneDecision.getRoutineName().equals("START")) { 
 
-            droneDecision.setRoutine(activeRoutines.selectRoutine("I"));
+            droneDecision.setRoutine(activeRoutines.selectRoutine("I")); 
         }   
-        else if(droneDecision.getRoutineName().equals("I")) { // EchoLeft 
 
-            if (extras.getInt("range") > 1) {
-                droneDecision.setRoutine(activeRoutines.selectRoutine("A")); // HeadingLeft 
+        // Try turning left if space is available, otherwise turn right
+        else if(droneDecision.getRoutineName().equals("I")) {
+
+            if (extras.getInt("range") > 1) { // Check if there is space to turn left
+
+                droneDecision.setRoutine(activeRoutines.selectRoutine("A")); 
             }
             else {
-                droneDecision.setRoutine(activeRoutines.selectRoutine("J")); // HeadingRight
+                droneDecision.setRoutine(activeRoutines.selectRoutine("J")); 
             }
             
         }
+
+        // After turning right, continue turning right until facing North
+        // or echo left if no space to turn
         else if (droneDecision.getRoutineName().equals("J")) {
 
-            if (extras.getInt("range") > 1) {
-                if (!drone.getHeading().equals(Heading.NORTH)) {
-                droneDecision.setRoutine(activeRoutines.selectRoutine("J"));
+            if (extras.getInt("range") > 1) { // Check if there is space to turn right
+
+                if (!drone.getHeading().equals(Heading.NORTH)) { // Check if drone is facing North
+
+                    droneDecision.setRoutine(activeRoutines.selectRoutine("J"));
                 }
                 else {
                     droneDecision.setRoutine(activeRoutines.selectRoutine("K"));
 
                 }
             }
-            else {
-                droneDecision.setRoutine(activeRoutines.selectRoutine("N"));
+            else { // Terminates Algorithm
+                drone.placeOnRaycastMap();
+                activeRoutines.clearRoutine();
+                switchState = true;
             }
             
-        }
-        else if (droneDecision.getRoutineName().equals("N")) {
+        } 
 
+        // After echoing left, turn left if there is space, otherwise face South and terminate algorithm
+        else if (droneDecision.getRoutineName().equals("K")) { 
+
+            if (extras.getInt("range") > 1) { // Check if there is space to turn left
+
+                droneDecision.setRoutine(activeRoutines.selectRoutine("E")); 
+            }
+            else {
+                droneDecision.setRoutine(activeRoutines.selectRoutine("L")); 
+            }
+
+        }
+
+        // Now that drone faces South, terminate algorithm
+        else if (droneDecision.getRoutineName().equals("L")) { 
+
+            // Terminates Algorithm
             drone.placeOnRaycastMap();
             activeRoutines.clearRoutine();
             switchState = true;
 
         }
-        else if (droneDecision.getRoutineName().equals("K")) { //Echo left
 
-            if (extras.getInt("range") > 1) {
-                droneDecision.setRoutine(activeRoutines.selectRoutine("E"));
-            }
-            else {
-                droneDecision.setRoutine(activeRoutines.selectRoutine("L"));
-            }
-
-        }
-
-        else if (droneDecision.getRoutineName().equals("L")) {
-            
-            drone.placeOnRaycastMap();
-            activeRoutines.clearRoutine();
-            switchState = true;
-
-        }
+        // Continue turning left until facing North, or begin turning right if no space
         else if (droneDecision.getRoutineName().equals("A")) {
 
-            if (extras.getInt("range") > 1) {
-                if (!drone.getHeading().equals(Heading.NORTH)) {
-                droneDecision.setRoutine(activeRoutines.selectRoutine("A"));
+            if (extras.getInt("range") > 1) { // Check if there is space to turn left
+
+                if (!drone.getHeading().equals(Heading.NORTH)) { // Check if drone is facing North
+
+                    droneDecision.setRoutine(activeRoutines.selectRoutine("A")); 
                 }
                 else {
-                    droneDecision.setRoutine(activeRoutines.selectRoutine("B"));
+                    droneDecision.setRoutine(activeRoutines.selectRoutine("B")); 
 
                     }
             }
             else {
-                droneDecision.setRoutine(activeRoutines.selectRoutine("J"));
+                droneDecision.setRoutine(activeRoutines.selectRoutine("J")); 
             }
 
         }
 
-        // Drone scan north
-        else if (droneDecision.getRoutineName().equals("B")) {
+        // Look forward and assess how long to fly North until obstacle reached
+        else if (droneDecision.getRoutineName().equals("B")) { 
 
-            if (extras.getString("found").equals("GROUND")) {
+            if (extras.getString("found").equals("GROUND")) { // Checks if drone is facing ground 
 
-                drone.setSafeTravelDistance(extras.getInt("range") + 1);
+                drone.setSafeTravelDistance(extras.getInt("range") + 1);   
 
-                droneDecision.setRoutine(activeRoutines.selectRoutine("C"));
+                droneDecision.setRoutine(activeRoutines.selectRoutine("C")); 
             }
 
-            else if (extras.getString("found").equals("OUT_OF_RANGE")) {
+            else if (extras.getString("found").equals("OUT_OF_RANGE")) { // Checks if drone is facing out of range
 
-                if (extras.getInt("range") > 1) {
+                if (extras.getInt("range") > 1) { // Checks if drone has space to fly forward
+
                     drone.setSafeTravelDistance(extras.getInt("range") - 1);
 
-                    droneDecision.setRoutine(activeRoutines.selectRoutine("C"));
+                    droneDecision.setRoutine(activeRoutines.selectRoutine("C")); 
                 }
                 else {
 
-                    // Finished travelling North
-                    droneDecision.setRoutine(activeRoutines.selectRoutine("D"));
+                    droneDecision.setRoutine(activeRoutines.selectRoutine("D")); 
                 }
             }
 
         }
-
-        // Drone travel north
-        else if (droneDecision.getRoutineName().equals("C")) {
+        // Fly North until obstacle reached
+        else if (droneDecision.getRoutineName().equals("C")) { 
 
             int distance_remaining = drone.getSafeTravelDistance();
 
-            // More distance left to travel
-            if (distance_remaining > 1) {
+            if (distance_remaining > 1) { // Continues travelling North until obstacle encountered
                 distance_remaining -= 1;
 
                 drone.setSafeTravelDistance(distance_remaining);
 
-                droneDecision.setRoutine(activeRoutines.selectRoutine("C"));
+                droneDecision.setRoutine(activeRoutines.selectRoutine("C")); 
             }
             else {
 
-                // Repeat echoing process
                 droneDecision.setRoutine(activeRoutines.selectRoutine("B"));
             }
         }
+        // Turn left if there is space, otherwise turn right
+        else if (droneDecision.getRoutineName().equals("D")) { 
 
-        else if (droneDecision.getRoutineName().equals("D")) {
-
-            if (extras.getInt("range") > 1) {
+            if (extras.getInt("range") > 1) { // Checks if drone can turn left
                 droneDecision.setRoutine(activeRoutines.selectRoutine("E"));
             }
             else {
                 droneDecision.setRoutine(activeRoutines.selectRoutine("H"));
             }
         }
+        // Now facing West, drone has fully travelled North
+        else if (droneDecision.getRoutineName().equals("E")) { 
 
-        else if (droneDecision.getRoutineName().equals("E")) {
-
-            droneDecision.setRoutine(activeRoutines.selectRoutine("F"));
+            droneDecision.setRoutine(activeRoutines.selectRoutine("F")); 
         }
 
-        // Drone scan west
-        else if (droneDecision.getRoutineName().equals("F")) {
+        // Look forward and assess how long to fly West until obstacle reached
+        else if (droneDecision.getRoutineName().equals("F")) { 
 
-            if (extras.getString("found").equals("GROUND")) {
+            if (extras.getString("found").equals("GROUND")) { // Check if drone is facing ground
 
                 drone.setSafeTravelDistance(extras.getInt("range") + 1);
 
-                droneDecision.setRoutine(activeRoutines.selectRoutine("G"));
+                droneDecision.setRoutine(activeRoutines.selectRoutine("G")); 
             }
-            else if (extras.getString("found").equals("OUT_OF_RANGE")) {
+            else if (extras.getString("found").equals("OUT_OF_RANGE")) { // Check if drone is facing out of range
 
-                if (extras.getInt("range") > 1) {
+                if (extras.getInt("range") > 1) { // Check if drone can move forward
                     drone.setSafeTravelDistance(extras.getInt("range") - 1);
 
-                    droneDecision.setRoutine(activeRoutines.selectRoutine("G"));
+                    droneDecision.setRoutine(activeRoutines.selectRoutine("G")); 
                 }
                 else {
 
-                    droneDecision.setRoutine(activeRoutines.selectRoutine("M"));
+                    droneDecision.setRoutine(activeRoutines.selectRoutine("M")); 
                     
                 }
             }
         }
+        // Face South and terminate algorithm
+        else if (droneDecision.getRoutineName().equals("M")) { 
 
-        else if (droneDecision.getRoutineName().equals("M")) {
-
+            // Terminates Algorithm
             drone.placeOnRaycastMap();
-                    
             activeRoutines.clearRoutine();
-
             switchState = true;
         }
-
-        // Drone travel west
+        // Fly West until obstacle reached
         else if (droneDecision.getRoutineName().equals("G")) {
 
             int distance_remaining = drone.getSafeTravelDistance();
 
-            // More distance left to travel
-            if (distance_remaining > 0) {
+            if (distance_remaining > 0) { // Continues forward until obstacle reached
                 distance_remaining -= 1;
 
                 drone.setSafeTravelDistance(distance_remaining);
@@ -221,27 +229,28 @@ public class FindCornerAlgorithm {
                     droneDecision.setRoutine(activeRoutines.selectRoutine("G"));
                 }
                 else {
-                    droneDecision.setRoutine(activeRoutines.selectRoutine("F"));
+                    droneDecision.setRoutine(activeRoutines.selectRoutine("F")); 
                 }
                 
             }
             else {
 
-                // Repeat echoing process
-                droneDecision.setRoutine(activeRoutines.selectRoutine("F"));
+                droneDecision.setRoutine(activeRoutines.selectRoutine("F")); 
             }
         }
+        // Turn right to face West
+        else if (droneDecision.getRoutineName().equals("H")) { 
 
-        else if (droneDecision.getRoutineName().equals("H")) {
             droneDecision.setRoutine(activeRoutines.selectRoutine("F"));
         }
 
         return switchState;
 
     }
+    // Define routines for the find corner algorithm    
+    public void findCornerConstructor() { 
 
-    public void findCornerConstructor() {
-
+        // Defines sequences of drone actions that compose each routine
         Queue<DroneAction> sequenceA = new LinkedList<DroneAction>();
         sequenceA.add(new HeadingLeft());
         sequenceA.add(new EchoLeft());
@@ -288,11 +297,7 @@ public class FindCornerAlgorithm {
         Queue<DroneAction> sequenceM = new LinkedList<DroneAction>();
         sequenceM.add(new HeadingLeft());
 
-        Queue<DroneAction> sequenceN = new LinkedList<DroneAction>();
-        sequenceN.add(new Scan());
-
-
-        // Routine A: Sets Heading Left
+        // Creating each routine in the algorithm
         Routine routine1 = new Routine("A", sequenceA);
         Routine routine2 = new Routine("B", sequenceB);
         Routine routine3 = new Routine("C", sequenceC);
@@ -306,8 +311,8 @@ public class FindCornerAlgorithm {
         Routine routine11 = new Routine("K", sequenceK);
         Routine routine12 = new Routine("L", sequenceL);
         Routine routine13 = new Routine("M", sequenceM);
-        Routine routine14 = new Routine("N", sequenceN);
 
+        // Adding each routine to the active list of routines
         activeRoutines.addRoutine(routine1);
         activeRoutines.addRoutine(routine2);
         activeRoutines.addRoutine(routine3);
@@ -321,7 +326,6 @@ public class FindCornerAlgorithm {
         activeRoutines.addRoutine(routine11);
         activeRoutines.addRoutine(routine12);
         activeRoutines.addRoutine(routine13);
-        activeRoutines.addRoutine(routine14);
        
     }
     
