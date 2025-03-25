@@ -66,7 +66,6 @@ public class Explorer implements IExplorerRaid {
 
         response.setResponse(jsonResponse);
 
-        // The errors below are inherint to source code
         logger.info("** DroneResponse received:\n" + jsonResponse.toString(2));
         Integer cost = jsonResponse.getInt("cost");
         logger.info("The cost of the action was {}", cost);
@@ -77,7 +76,8 @@ public class Explorer implements IExplorerRaid {
 
         drone.decreaseBattery(cost);
         drone.displayBattery();
-    
+
+        // Update list of creeks and sites after scanning
         if (lastAction.equals("scan")) {
 
             JSONArray creeks = extraInfo.getJSONArray("creeks");
@@ -93,6 +93,7 @@ public class Explorer implements IExplorerRaid {
             }
         }
 
+        // Fly the drone back to base when nearly out of battery
         if (drone.batteryDepleted()) {
 
             Queue<DroneAction> sequenceA = new LinkedList<DroneAction>();
@@ -103,7 +104,7 @@ public class Explorer implements IExplorerRaid {
             decision.setRoutine(routine1);
         }
 
-
+        // Load next routine
         if (decision.isEmpty()) {
             algorithmManager.nextRoutine();
         }
