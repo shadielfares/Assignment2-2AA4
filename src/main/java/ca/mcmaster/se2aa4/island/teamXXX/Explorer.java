@@ -1,22 +1,36 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-import java.io.StringReader;
-import java.net.CookieStore;
+import ca.mcmaster.se2aa4.island.teamXXX.algorithms.AlgorithmManager;
+import ca.mcmaster.se2aa4.island.teamXXX.drone.Drone;
+import ca.mcmaster.se2aa4.island.teamXXX.enumerations.Heading;
+import ca.mcmaster.se2aa4.island.teamXXX.drone.DroneDecision;
+import ca.mcmaster.se2aa4.island.teamXXX.drone.DroneAction;
+import ca.mcmaster.se2aa4.island.teamXXX.drone.DroneResponse;
+import ca.mcmaster.se2aa4.island.teamXXX.poi.Creek;
+import ca.mcmaster.se2aa4.island.teamXXX.poi.Site;
+import ca.mcmaster.se2aa4.island.teamXXX.actions.Stop;
+import ca.mcmaster.se2aa4.island.teamXXX.tools.Routine;
 
+import java.io.StringReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
 import eu.ace_design.island.bot.IExplorerRaid;
+import java.util.LinkedList;
+import java.util.Queue;
 
-public class CommandManager implements IExplorerRaid {
 
-    private Algorithm algorithm = new Algorithm();
+public class Explorer implements IExplorerRaid {
+
+    private AlgorithmManager algorithmManager = new AlgorithmManager();
 
     private final Logger logger = LogManager.getLogger();
 
     private Drone drone = Drone.getDroneInstance();
+
+    private String lastAction;
 
     @Override
     public void initialize(String s) {
@@ -25,18 +39,7 @@ public class CommandManager implements IExplorerRaid {
         logger.info("** Initialization info:\n {}", info.toString(2));
         String direction = info.getString("heading");
         
-        if (direction.equals("N")) {
-            drone.setHeading(Heading.NORTH);
-        }
-        else if (direction.equals("E")) {
-            drone.setHeading(Heading.EAST);
-        }
-        else if (direction.equals("S")) {
-            drone.setHeading(Heading.SOUTH);
-        }
-        else {
-            drone.setHeading(Heading.WEST);
-        }
+        drone.initializeHeading(direction);
 
         Integer batteryLevel = info.getInt("budget");
         logger.info("The drone is facing {}", direction);
@@ -50,6 +53,7 @@ public class CommandManager implements IExplorerRaid {
 
         JSONObject jsonDecision = decision.getDecision();
         String stringDecision = jsonDecision.toString();
+        lastAction = jsonDecision.getString("action");
 
         logger.info("** DroneDecision: {}", stringDecision);
         return stringDecision;
@@ -75,15 +79,49 @@ public class CommandManager implements IExplorerRaid {
 
         drone.decreaseBattery(cost);
         drone.displayBattery();
+    
+        if (lastAction.equals("scan")) {
+
+            JSONArray creeks = extraInfo.getJSONArray("creeks");
+
+            for (int i=0; i < creeks.length(); i++) {
+                drone.addCreek(new Creek(drone.getX(), drone.getY(), creeks.getString(i)));
+            }
+
+            JSONArray sites = extraInfo.getJSONArray("sites");
+
+            for (int i=0; i < sites.length(); i++) {
+                drone.addSite(new Site(drone.getX(), drone.getY(), sites.getString(i)));
+            }
+        }
+
+        if (drone.batteryDepleted()) {
+
+            Queue<DroneAction> sequenceA = new LinkedList<DroneAction>();
+            sequenceA.add(new Stop());
+
+            Routine routine1 = new Routine("A", sequenceA);
+
+            decision.setRoutine(routine1);
+        }
+
 
         if (decision.isEmpty()) {
-            algorithm.nextRoutine();
+            algorithmManager.nextRoutine();
         }
+
     }
 
     @Override
     public String deliverFinalReport() {
-        return "no creek found";
+        
+        Drone drone = Drone.getDroneInstance();
+
+        String closestSite = drone.findNearestCreek();
+
+        logger.info(closestSite);
+
+        return closestSite;
     }
 
 }

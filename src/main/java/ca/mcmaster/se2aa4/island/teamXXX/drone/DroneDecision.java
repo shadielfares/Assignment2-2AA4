@@ -1,4 +1,7 @@
-package ca.mcmaster.se2aa4.island.teamXXX;
+package ca.mcmaster.se2aa4.island.teamXXX.drone;
+
+import ca.mcmaster.se2aa4.island.teamXXX.actions.Scan;
+import ca.mcmaster.se2aa4.island.teamXXX.tools.Routine;
 
 import java.util.Queue;
 import java.util.LinkedList;
@@ -6,6 +9,7 @@ import java.util.LinkedList;
 import org.json.JSONObject;
 
 public class DroneDecision {
+    
     private static DroneDecision instance = null;
     private Routine routine;
 

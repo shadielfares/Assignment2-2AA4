@@ -1,15 +1,18 @@
-package ca.mcmaster.se2aa4.island.teamXXX;
+package ca.mcmaster.se2aa4.island.teamXXX.tools;
 
-import org.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import ca.mcmaster.se2aa4.island.teamXXX.enumerations.Heading;
 
 
 public class RaycastMap {
 
-    private char[][] grid = new char[60][60];
+    private final int SIZE = 60;
 
-    private int[][] rowEnds = new int[60][2];
+    private char[][] grid = new char[SIZE][SIZE];
+
+    private int[][] rowEnds = new int[SIZE][2];
 
     private int entryRow;
     private int exitRow;
@@ -18,8 +21,8 @@ public class RaycastMap {
 
     public RaycastMap() {
 
-        for (int i=0; i<60; i++) {
-            for (int j=0; j<60; j++) {
+        for (int i=0; i<SIZE; i++) {
+            for (int j=0; j<SIZE; j++) {
                 grid[i][j] = '_';
             }
         }
@@ -58,10 +61,10 @@ public class RaycastMap {
 
     public void displayMap() {
 
-        for (int i=0; i<60; i++) {
+        for (int i=0; i<SIZE; i++) {
             String row = "";
 
-            for (int j=0; j<60; j++) {
+            for (int j=0; j<SIZE; j++) {
                 row += grid[i][j] + " ";
             }
 
@@ -70,14 +73,14 @@ public class RaycastMap {
 
     }
 
-    public void calculateRowEnds() {
+    public void calculateScanRegion() {
         
-        for (int i=0; i<60; i++) {
+        for (int i=0; i<SIZE; i++) {
 
-            int xMin = 61;
+            int xMin = SIZE + 1;
             int xMax = -1;
 
-            for (int j=0; j<60;j++) {
+            for (int j=0; j<SIZE;j++) {
                 
                 if (grid[i][j] == 'X') {
 
@@ -95,9 +98,9 @@ public class RaycastMap {
 
     public void calculateEntryRow() {
 
-        for (int i =0; i<60;i++) {
+        for (int i =0; i<SIZE;i++) {
 
-            if (rowEnds[i][0] != 61) {
+            if (rowEnds[i][0] != SIZE + 1) {
 
                 entryRow = i + 1;
                 break;
@@ -107,9 +110,9 @@ public class RaycastMap {
 
     public void calculateExitRow() {
 
-        for (int i =0; i<60;i++) {
+        for (int i =0; i<SIZE;i++) {
 
-            if (rowEnds[i][0] != 61) {
+            if (rowEnds[i][0] != SIZE + 1) {
 
                 exitRow = i + 1;
             }

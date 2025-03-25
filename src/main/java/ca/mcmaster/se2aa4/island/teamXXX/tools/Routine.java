@@ -1,13 +1,15 @@
-package ca.mcmaster.se2aa4.island.teamXXX;
+package ca.mcmaster.se2aa4.island.teamXXX.tools;
+
+import ca.mcmaster.se2aa4.island.teamXXX.drone.DroneAction;
+import ca.mcmaster.se2aa4.island.teamXXX.drone.Drone;
 
 import java.util.Queue;
-
 import org.json.JSONObject;
-
 import java.util.LinkedList;
 
 public class Routine {
-    private String name;
+
+    private final String name;
     private Queue<DroneAction> decisionQueue = new LinkedList<DroneAction>();
     private Drone drone = Drone.getDroneInstance();
 
@@ -17,6 +19,7 @@ public class Routine {
     }
 
     public JSONObject getRoutineDecision() {
+
         // Check if the queue is not empty
         DroneAction decision = decisionQueue.remove();
         JSONObject jsonDecision = decision.doAction(drone.getHeading());
@@ -27,7 +30,6 @@ public class Routine {
         return decisionQueue.size() < 1;
     }
 
-    // Fix Leaky Abstraction
     public String getRoutineName() {
         return this.name;
     }

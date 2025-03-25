@@ -9,11 +9,11 @@ public class Runner {
     public static void main(String[] args) {
         String filename = args[0];
         try {
-            run(CommandManager.class)
+            run(Explorer.class)
                     .exploring(new File(filename))
                     .withSeed(42L)
-                    .startingAt(30, 30, "EAST")
-                    .backBefore(100000)
+                    .startingAt(1, 1, "EAST")
+                    .backBefore(17000)
                     .withCrew(5)
                     .collecting(1000, "WOOD")
                     .storingInto("./outputs")
